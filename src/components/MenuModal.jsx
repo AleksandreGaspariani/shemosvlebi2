@@ -3,12 +3,15 @@ import MenuIcon from '@mui/icons-material/Menu'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { logout } from '../store/slices/authSlice'
 
 
 const MenuModal = () => {
   const [anchorEl, setAnchorEl] = React.useState(null)
   const open = Boolean(anchorEl)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget)
@@ -19,6 +22,12 @@ const MenuModal = () => {
   const handleMenuItemClick = (path) => {
     navigate(path)
     handleMenuClose()
+  }
+  
+  const handleLogout = () => {
+    localStorage.removeItem("userEmail")
+    dispatch(logout())
+    navigate("/")
   }
 
   return (
@@ -52,6 +61,7 @@ const MenuModal = () => {
         <MenuItem onClick={() => handleMenuItemClick('/')}>მთავარი</MenuItem>
         <MenuItem onClick={() => handleMenuItemClick('/userPanel')}>მომხმარებლები</MenuItem>
         <MenuItem onClick={() => handleMenuItemClick('/branches')}>ფილიალები</MenuItem>
+        <MenuItem onClick={handleLogout}>გასვლა</MenuItem>
       </Menu>
     </div>
   )

@@ -18,9 +18,9 @@ const Dashboard = () => {
   const dispatch = useDispatch()
   const filteredEvents = useSelector(selectFilteredEvents)
   const selectedLocation = useSelector(selectSelectedLocation)
+  const user = useSelector(state => state.auth.isLoggedIn)
   
   // Local state
-  const user = true //ok es unda shevcvalo ro check qnas to user credentials exist in local storage
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [modalOpened, setModalOpened] = useState(false)
 
@@ -28,6 +28,8 @@ const Dashboard = () => {
   const handleDateClick = (arg) => {
     if (!user) {
       alert("Please log in to create an event.");
+      arg.view.calendar.unselect(); // clearing selection
+      tippy.hideAll(); // hide all tooltips
       return;
     } else {
       setSelectedEvent(arg.date)
@@ -227,16 +229,19 @@ const Dashboard = () => {
 
             //tooltip for events
             eventDidMount={(info) => {
-              tippy(info.el, {
-                content: `
-                  <strong>მომწოდებელი:</strong> ${info.event.extendedProps.name}<br/>
-                  <strong>კატეგორია:</strong> ${info.event.extendedProps.category}<br/>
-                `,
-                allowHTML: true, 
-                placement: 'top',
-                theme: 'light-border', 
-                arrow: true, 
-              });
+              // Only show tooltip for events that have an id (i.e., saved events)
+              if (info.event.id) {
+                tippy(info.el, {
+                  content: `
+                    <strong>მომწოდებელი:</strong> ${info.event.extendedProps.name}<br/>
+                    <strong>კატეგორია:</strong> ${info.event.extendedProps.category}<br/>
+                  `,
+                  allowHTML: true, 
+                  placement: 'top',
+                  theme: 'light-border', 
+                  arrow: true, 
+                });
+              }
             }}
           />
         </div>

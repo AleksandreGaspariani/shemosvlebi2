@@ -1,22 +1,29 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { setSelectedLocation } from '../store/slices/filtersSlice'
 import { selectSelectedLocation, selectLocations } from '../store/selectors'
 import LoginModal from './LoginModal'
 import logo from '../assets/logo.png'
 import MenuModal from './MenuModal'
+import { login, setAuthFromStorage } from '../store/slices/authSlice'
 
 const TopNavbar = () => {
   // Redux state
   const dispatch = useDispatch()
   const selectedLocation = useSelector(selectSelectedLocation)
   const locations = useSelector(selectLocations)
+  const isLoggedIn = useSelector(state => state.auth.isLoggedIn)
   
-  // Local state for authentication (link it with backend later)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  // Local state for registration
   const [registerOpen, setRegisterOpen] = useState(false)
   const [registerEmail, setRegisterEmail] = useState("")
   const [registerPassword, setRegisterPassword] = useState("")
+
+  useEffect(() => {
+    const email = localStorage.getItem('userEmail')
+    dispatch(setAuthFromStorage(email))
+  }, [dispatch])
+
 
   // Handler for location selection
   const handleLocationSelect = (location) => {
@@ -26,14 +33,13 @@ const TopNavbar = () => {
 
   const handleRegisterSubmit = (e) => {
     e.preventDefault()
-    // TODO: Replace with real registration logic (backend API call)
-
-    console.log("User logged in with:", registerEmail, registerPassword)
+    //saving to local storage
+    localStorage.setItem('userEmail', registerEmail)
+    dispatch(login(registerEmail))
 
     setRegisterOpen(false)
     setRegisterEmail("")
     setRegisterPassword("")
-    setIsLoggedIn(true) 
   }
 
   return (
