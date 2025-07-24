@@ -1,16 +1,28 @@
 import React, { useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { setSelectedLocation } from '../store/slices/filtersSlice'
+import { selectSelectedLocation, selectLocations } from '../store/selectors'
 import LoginModal from './LoginModal'
 import logo from '../assets/logo.png'
 import MenuModal from './MenuModal'
 
 const TopNavbar = () => {
-  const locations = ["დიდუბე", "წყალსადენი", "გლდანი", "ბათუმი(საკონსერვო)", "ბათუმი (დე-ეს-კა)", "თელავი", "ქუთაისი", "საბურთალო", "რუსთავი", "ლილო", "გორი", "ვაკე"]
-  const [selectedLocation, setSelectedLocation] = useState(locations[0])
-  // Simulate authentication state and later connect it to backend
+  // Redux state
+  const dispatch = useDispatch()
+  const selectedLocation = useSelector(selectSelectedLocation)
+  const locations = useSelector(selectLocations)
+  
+  // Local state for authentication (link it with backend later)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
   const [registerEmail, setRegisterEmail] = useState("")
   const [registerPassword, setRegisterPassword] = useState("")
+
+  // Handler for location selection
+  const handleLocationSelect = (location) => {
+    dispatch(setSelectedLocation(location))
+  }
+
 
   const handleRegisterSubmit = (e) => {
     e.preventDefault()
@@ -46,7 +58,7 @@ const TopNavbar = () => {
         {locations.map((location) => (
         <button
             key={location}
-            onClick={() => setSelectedLocation(location)}
+            onClick={() => handleLocationSelect(location)}
             style={{
             padding: "10px 20px",
             backgroundColor: "transparent",

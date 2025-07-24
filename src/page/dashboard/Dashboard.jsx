@@ -1,4 +1,7 @@
 import { React, useState } from "react"
+import { useSelector, useDispatch } from 'react-redux'
+import { selectFilteredEvents, selectSelectedLocation } from '../../store/selectors'
+import { addEvent, deleteEvent, updateEvent } from '../../store/slices/eventsSlice'
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import timeGridPlugin from "@fullcalendar/timegrid"
@@ -11,60 +14,13 @@ import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
 const Dashboard = () => {
-  const user = true
-  const [events, setEvents] = useState([
-    {
-      id: "1",
-      name: "გიორგი",
-      category: "შეხვედრა",
-      branch: "დიდუბე",
-      start: "2025-07-24T10:00:00",
-      end: "2025-07-24T10:15:00",
-      backgroundColor: "#3788d8",
-      borderColor: "#3788d8",
-    },
-    {
-      id: "2",
-      name: "თამარი",
-      category: "დედლაინი",
-      branch: "ვაკე",
-      start: "2025-07-24T09:30:00",
-      end: "2025-07-24T09:45:00",
-      backgroundColor: "#f56565",
-      borderColor: "#f56565",
-    },
-    {
-      id: "3",
-      name: "ნინო",
-      category: "ზარი",
-      branch: "წყალსადენი",
-      start: "2024-12-18T14:00:00",
-      end: "2024-12-18T15:00:00",
-      backgroundColor: "#48bb78",
-      borderColor: "#48bb78",
-    },
-    {
-      id: "4",
-      name: "ლევანი",
-      category: "ტრენინგი",
-      branch: "გლდანი",
-      start: "2024-12-22T09:00:00",
-      end: "2024-12-22T17:00:00",
-      backgroundColor: "#9f7aea",
-      borderColor: "#9f7aea",
-    },
-    {
-      id: "5",
-      name: "მარიამი",
-      category: "წვეულება",
-      branch: "რუსთავი",
-      start: "2024-12-25T18:00:00",
-      end: "2024-12-25T19:00:00",
-      backgroundColor: "#ed8936",
-      borderColor: "#ed8936",
-    },
-  ])
-
+  // Redux state
+  const dispatch = useDispatch()
+  const filteredEvents = useSelector(selectFilteredEvents)
+  const selectedLocation = useSelector(selectSelectedLocation)
+  
+  // Local state
+  const user = true //ok es unda shevcvalo ro check qnas to user credentials exist in local storage
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [modalOpened, setModalOpened] = useState(false)
 
@@ -79,7 +35,7 @@ const Dashboard = () => {
     }
   }
 
-  // Updated to match new EventModal fields
+  // uses Redux
   const handleSaveEvent = ({ name, category, branch }) => {
     const start = selectedEvent;
     const end = new Date(start.getTime() + 15 * 60 * 1000); // Default to 15 mins
@@ -88,37 +44,31 @@ const Dashboard = () => {
       id: Date.now().toString(),
       name,
       category,
-      branch,
+      branch: branch || selectedLocation, // Use selected location as default
       start,
       end,
       backgroundColor: "#3788d8",
       borderColor: "#3788d8",
     };
 
-    setEvents([...events, newEvent]);
+    dispatch(addEvent(newEvent));
     setModalOpened(false);
   };
 
   const handleEventClick = (clickInfo) => {
     setSelectedEvent(clickInfo.event)
-    if (window.confirm(`Delete event '${clickInfo.event.extendedProps.name}'?`)) { //what does extended prop do check itt
-      setEvents(events.filter((event) => event.id !== clickInfo.event.id))
+    if (window.confirm(`Delete event '${clickInfo.event.extendedProps.name}'?`)) {
+      dispatch(deleteEvent(clickInfo.event.id))
       setSelectedEvent(null)
     }
   }
 
   const handleEventDrop = (dropInfo) => {
-    const updatedEvents = events.map((event) => {
-      if (event.id === dropInfo.event.id) {
-        return {
-          ...event,
-          start: dropInfo.event.start,
-          end: dropInfo.event.end,
-        }
-      }
-      return event
-    })
-    setEvents(updatedEvents)
+    const updatedData = {
+      start: dropInfo.event.start,
+      end: dropInfo.event.end,
+    }
+    dispatch(updateEvent({ id: dropInfo.event.id, updates: updatedData }))
   }
 
   const georgianDays = {
@@ -206,7 +156,7 @@ const Dashboard = () => {
               day: "დღე",
               list: "სია",
             }}
-            events={events}
+            events={filteredEvents}
             dateClick={handleDateClick}
             eventClick={handleEventClick}
             eventDrop={handleEventDrop}
